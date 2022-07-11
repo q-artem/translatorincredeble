@@ -89,6 +89,9 @@ async def stat(ctx, *args):
         await bot.change_presence(status=discord.Status.online,
                                   activity=discord.Game(stat + " | !heeelp !versions"))
 
+@bot.command()
+async def statt(ctx):
+    print(ctx.message.content)
 
 def mess_lang(a, b):
     c = ""
@@ -125,6 +128,12 @@ def translate(into_l, it_messing, on_l, args):
 
 async def send_trans(channel, message, answer=None, text=""):
     trans, lang = message
+    while ("&lt;@" in trans) or ("&gt;" in trans):
+        num1 = trans.find("&lt;@")
+        user = await bot.fetch_user(trans[num1 + 5:num1 + 5 + len('711524916457111594')])
+        username = user.name
+        print("Name finding complete")
+        trans = trans[:num1] + " @" + username + " " + trans[num1 + 5 + len('711524916457111594') + 4:]
     emb = discord.Embed(color=discord.Color.green())
     emb.add_field(name=">>> " + trans, value="*" + lang + "*", inline=False)
     if answer is None:
@@ -378,6 +387,10 @@ async def versions(ctx):
     text_2 = "__**0.4.0**__\n"
     text = "Code formatted, translation added followed by message removal, debugging features added, " \
            "some additional commands added, git has also been added to the project"
+    emb.add_field(name=text_2, value=text, inline=False)
+
+    text_2 = "__**0.4.1**__\n"
+    text = "Translations now correctly display references"
     emb.add_field(name=text_2, value=text, inline=False)
 
     text_2 = "**(in developing)**\n"
