@@ -1,5 +1,8 @@
+from asyncio import sleep
 import asyncio
 import random
+import datetime
+
 from translate import Translator
 from lingua import LanguageDetectorBuilder
 import cryptocode
@@ -13,7 +16,7 @@ from constants import *
 
 
 print("Libraries import completed")
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
 
 @bot.command()
@@ -25,6 +28,35 @@ async def g_m(ctx):
     await ctx.send(mess)
     await ctx.message.delete()
     print(f"Send '{mess}' message")
+
+
+@bot.command()
+async def memberss(ctx):
+    for guild in bot.guilds:
+        for member in guild.members:
+            await ctx.send(member.id)
+
+
+@bot.event
+async def on_member_join(member):
+    with open('last_messages.txt', 'a') as f:
+        f.write(str(member.id) + " " + str(datetime.datetime.today()) + "\n")
+    channel = bot.get_channel(966246794428305429)
+    await channel.send(str(member) + " join server")
+
+
+@bot.event
+async def on_member_remove(member):
+    d = ""
+    with open('last_messages.txt', 'r') as f:
+        for q in f:
+            if str(member.id) in q:
+                continue
+            d += q
+    with open('last_messages.txt', 'w') as f:
+        f.write(d)
+    channel = bot.get_channel(966246794428305429)
+    await channel.send(str(member) + " leave over server")
 
 
 @bot.command()
@@ -72,6 +104,31 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.online,
                               activity=discord.Game("вообще-то не играет... | !heeelp !versions"))
     print('Status complete')
+    while True:  # для бана по неактивности
+        with open('last_messages.txt', 'r') as f:
+            for q in f:
+                v = q.split(" ")[1].split("-")
+                b = q.split(" ")[2].split(":")
+                in_datetime = datetime.datetime(int(v[0]), int(v[1]), int(v[2]), hour=int(b[0]), minute=int(b[1]), second=int(b[2].split(".")[0]), microsecond=int(b[2].split(".")[1]))
+                today_date = datetime.datetime.today()
+                delta = today_date - in_datetime
+                month = datetime.timedelta(days=31)
+                if delta > month:
+                    user = await bot.fetch_user(int(q.split(" ")[0]))
+                    print(user, "Не писал ничего больше месяца!")
+                    channel = bot.get_channel(966246794428305429)
+                    await channel.send("Баним " + str(user) + "!")
+                    # обновляем время
+                    d = ""
+                    with open('last_messages.txt', 'r') as f:
+                        for q in f:
+                            if str(user.id) in q:
+                                d += q.split(" ")[0] + " " + str(datetime.datetime.today()) + "\n"
+                                continue
+                            d += q
+                    with open('last_messages.txt', 'w') as f:
+                        f.write(d)
+        await sleep(30)
 
 
 @bot.command()
@@ -158,6 +215,17 @@ def return_send_trans(message):
 
 @bot.event
 async def on_message(message_in):
+    # для отслеживания активности
+    d = ""
+    with open('last_messages.txt', 'r') as f:
+        for q in f:
+            if str(message_in.author.id) in q:
+                d += q.split(" ")[0] + " " + str(datetime.datetime.today()) + "\n"
+                continue
+            d += q
+    with open('last_messages.txt', 'w') as f:
+        f.write(d)
+
     if message_in.channel.id == 968102452417155162 and len(message_in.mentions) == 1:
         print("New message about level")
         level = message_in.content.split(" ")[-1][:-1]
@@ -391,6 +459,10 @@ async def versions(ctx):
 
     text_2 = "__**0.4.1**__\n"
     text = "Translations now correctly display references"
+    emb.add_field(name=text_2, value=text, inline=False)
+
+    text_2 = "__**0.4.2**__\n"
+    text = "Added ban for inactivity"
     emb.add_field(name=text_2, value=text, inline=False)
 
     text_2 = "**(in developing)**\n"
