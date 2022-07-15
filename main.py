@@ -10,6 +10,9 @@ import discord
 from discord.ext import commands
 from constants import *
 
+# ################## optional commands ################ #
+import optional_commands
+# ##################################################### #
 
 '''def print(*args, **kwargs):
     pass'''
