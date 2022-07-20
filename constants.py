@@ -24,5 +24,26 @@ DICT_LANG = {'af': 'afrikaans', 'sq': 'albanian', 'am': 'amharic', 'ar': 'arabic
              'sv': 'swedish', 'tg': 'tajik', 'ta': 'tamil', 'te': 'telugu', 'th': 'thai', 'tr': 'turkish',
              'uk': 'ukrainian', 'ur': 'urdu', 'uz': 'uzbek', 'vi': 'vietnamese', 'cy': 'welsh', 'xh': 'xhosa',
              'yi': 'yiddish', 'yo': 'yoruba', 'zu': 'zulu', 'fil': 'Filipino', 'he': 'Hebrew'}
+VERSIONS_DICT = {"__**0.1.0**__\n": "Created a bot, added basic ability to translate into Spanish and Russian",
+                 "__**0.2.0**__\n": "Added main languages on the server, made translation without prefixes, added help "
+                                    "menu",
+                 "__**0.2.1**__\n": 'A "server" is made for the bot',
+                 "__**0.2.2**__\n": "Japanese language added, translation by response added, bot translated to another "
+                                    "translator API",
+                 "__**0.3.0**__\n": "Completely rewritten commands, made commands insensitive to case, added the "
+                                    "ability to translate into several languages, added this command",
+                 "__**0.3.1**__\n": "Translation by answer can translate into several languages at once, bug fixed, "
+                                    "status added",
+                 "__**0.3.2**__\n": "Fix one bug and added 'Good morning' message)",
+                 "__**0.3.3**__\n": "Added the ability to send messages about new levels to the bot",
+                 "__**0.4.0**__\n": "Code formatted, translation added followed by message removal, debugging features "
+                                    "added, some additional commands added, git has also been added to the project",
+                 "__**0.4.1**__\n": "Translations now correctly display references",
+                 "__**0.4.2**__\n": "Added ban for inactivity",
+                 "__**0.5.0**__\n": "The code is divided into separate files, unnecessary functions are removed, all "
+                                    "errors are removed",
+                 "__**0.5.1**__\n": "Code cleaned up, added beta translation to channels"
+                 }
 STATE_COMMANDS = " | !sos !versions"
-STATE = "вообще-то не играет..." + STATE_COMMANDS
+STATE = "вообще-то не играет" + STATE_COMMANDS
+CHANNELS_FOR_TRANSLATE = {"ru": 999267959014965258, "es": 999267254384463892, "ja": 999267706861797417}

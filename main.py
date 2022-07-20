@@ -20,11 +20,15 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.online,
                               activity=discord.Game(STATE))
     print('Status complete')
-    await ban_cycle()
+    await ban_users()
 
 
 @bot.event
 async def on_message(message_in):
+    for attach in message_in.attachments:
+        if ".osr" == str(attach)[-4:]:
+            print(True)
+            print(message_in.content)
     if message_in.author == bot.user:
         return
     # для отслеживания активности
@@ -34,6 +38,9 @@ async def on_message(message_in):
         return
     # перевод по ответу
     if asyncio.create_task(translate_by_answer(message_in)) == "exit":
+        return
+    # отправка в каналы
+    if asyncio.create_task(translate_to_channels(message_in)) == "exit":
         return
     # перевод в остальных случаях
     asyncio.create_task(translate_text(message_in))

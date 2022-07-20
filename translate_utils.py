@@ -2,11 +2,11 @@ import datetime
 import discord
 from lingua import LanguageDetectorBuilder
 from translate import Translator
-from constants import DICT_LANG, LANGUAGES, DICT_OF_LANGUAGES, DICT_OF_RU_LANGUAGES
+from constants import DICT_LANG, LANGUAGES, DICT_OF_LANGUAGES, DICT_OF_RU_LANGUAGES, CHANNELS_FOR_TRANSLATE
 from bot_init import bot
 
 
-def mess_lang(a, b):
+def translation_information_string(a, b):  # генерация строки с информацией о языках
     try:
         c = DICT_LANG[a][0].upper() + DICT_LANG[a][1:] + " " + "(" + a + ")" + " " + "→" + " "
     except BaseException as e:
@@ -19,34 +19,27 @@ def mess_lang(a, b):
     return c
 
 
-def detect_lang(mess):
+def detect_lang(mess):  # определение языка текста
     detector = LanguageDetectorBuilder.from_languages(*LANGUAGES).build()
     lang_1 = detector.detect_language_of(str(" ".join(list(mess))))
     print("Detected land of {}".format(DICT_OF_LANGUAGES[lang_1]))
     return DICT_OF_LANGUAGES[lang_1]
 
 
-def translate(into_l, it_messing, on_l, args):
-    if it_messing:
+def translate(on_l, args):  # перевод текста
+    try:
         lang_1 = detect_lang(args)
-    else:
-        lang_1 = into_l
+    except KeyError:
+        print("Unable to detect language")
+        lang_1 = "en"
     translator = Translator(from_lang=lang_1, to_lang=on_l)
     text = str(" ".join(list(args)))
-    g = translator.translate(text)
-    print(f"Translate message from '{text}' to '{g}'")
-    return g, mess_lang(lang_1, on_l)
+    trans = translator.translate(text)
+    print(f"Translate message from '{text}' to '{trans}'")
+    return trans, translation_information_string(lang_1, on_l)
 
 
-def return_send_trans(message):
-    trans, lang = message
-    emb = discord.Embed(color=discord.Color.green())
-    emb.add_field(name=">>> " + trans, value="*" + lang + "*", inline=False)
-    print("Перевод для отправки сформирован")
-    return emb
-
-
-def update_activity_users(message_in):
+def update_activity_users(message_in):  # обновление времени последнего сообщения пользователя
     d = ""
     with open('last_messages.txt', 'r') as f:
         for q in f:
@@ -56,17 +49,18 @@ def update_activity_users(message_in):
             d += q
     with open('last_messages.txt', 'w') as f:
         f.write(d)
+    return True
 
 
-async def send_trans(channel, message, answer=None, text="", sender=""):
+async def send_trans(channel, message, answer=None, text="", sender=""):  # отправка перевода
     sender = "*`" + sender + ":`*\n"
     trans, lang = message
-    while ("&lt;@" in trans) or ("&gt;" in trans):
+    while ("&lt;@" in trans) or ("&gt;" in trans):  # ищем упоминания пользователей
         num1 = trans.find("&lt;@")
-        user = await bot.fetch_user(trans[num1 + 5:num1 + 5 + len('711524916457111594')])
+        user = await bot.fetch_user(trans[num1 + 5:num1 + 5 + 18])
         username = user.name
         print("Name finding complete")
-        trans = trans[:num1] + " @" + username + " " + trans[num1 + 5 + len('711524916457111594') + 4:]
+        trans = trans[:num1] + " @" + username + " " + trans[num1 + 5 + 18 + 4:]
     emb = discord.Embed(color=discord.Color.green())
     emb.add_field(name=sender * int(bool(len(sender) - 6)) + ">>> " + trans, value="*" + lang + "*", inline=False)
     if answer is None:
@@ -79,6 +73,7 @@ async def send_trans(channel, message, answer=None, text="", sender=""):
         except BaseException as e:
             await channel.send(text, embed=emb)
             print("Send translation complete" + str(e) * 0)
+    return True
 
 
 async def check_levels_channel(message_in):
@@ -112,127 +107,95 @@ async def check_levels_channel(message_in):
         return "exit"
 
 
-async def translate_by_answer(message_in):
+async def translate_by_answer(message_in):  # перевод сообщения по ответу
     message = message_in.content.lower()
-    list_keys = list()
-    msg = message_in
-
-    if message.split(" ")[0] == "п" or message.split(" ")[0] == "t":  # перевод по ответу
+    if message.split(" ")[0] == "п" or message.split(" ")[0] == "t":  # если префикс правильный
         print()
-        cont_f = False
-        if len(message.split(" ")) == 1:
-            cont_f = True
-            if message.split(" ")[0].lower() == "п":
-                list_keys.append([0, "ru"])
-            else:
-                list_keys.append([0, "en"])
+        list_keys = list()  # для всех нужных языков
+        msg = message_in
         flag_err = False
-        if not cont_f:
-            for q in range(len(message.split(" ")[1:])):
-                if message.split(" ")[1:][q] in DICT_OF_RU_LANGUAGES.values() or \
-                        message.split(" ")[1:][q] in DICT_OF_RU_LANGUAGES.keys():
-                    if message.split(" ")[1:][q] in DICT_OF_RU_LANGUAGES.keys():
-                        list_keys.append([1, message.split(" ")[1:][q]])  # если русский
+        if len(message.split(" ")) == 1:  # если только один аргумент, то переводим на русский или английский
+            if message.split(" ")[0].lower() == "п":
+                list_keys.append("ru")
+            else:
+                list_keys.append("en")
+        else:  # если несколько
+            for q in range(len(message.split(" ")[1:])):  # идём по всем кроме первого
+                if message.split(" ")[1:][q] in DICT_OF_RU_LANGUAGES.values() or message.split(" ")[1:][q] in DICT_OF_RU_LANGUAGES.keys():  # если название нормальное
+                    if message.split(" ")[1:][q] in DICT_OF_RU_LANGUAGES.values():
+                        list_keys.append(message.split(" ")[1:][q])  # если сразу по английски
                     else:
-                        list_keys.append([0, message.split(" ")[1:][q]])  # если непонятно
-                else:
+                        list_keys.append(DICT_OF_RU_LANGUAGES[message.split(" ")[1:][q]])  # если нет, ищем нормальный
+                else:  # если хоть один неправильно, то всё
                     flag_err = True
                     break
         if flag_err:
             print("Incorrect command format")
-            return "exit"
-        if message_in.reference and (msg := message_in.reference.resolved) and isinstance(msg, discord.Message):
+            return "exit"  # удалить повторения
+        if message_in.reference and (msg := message_in.reference.resolved) and isinstance(msg, discord.Message):  # если только это ответ
             await message_in.delete()
+            warning_message = 0
+            if len(list_keys) > 5:
+                list_keys = list_keys[:5]
+                warning_message = 1
+            await send_trans(message_in.channel, translate(list_keys[0],
+                                                           msg.content.split(" ")),
+                             answer=message_in.reference.resolved,
+                             text="Maximum you can translate 5 languages" * warning_message)
+            list_keys.pop(0)
+            for q in list_keys:
+                await send_trans(message_in.channel, translate(q, msg.content.split(" ")))
 
-            if len(list_keys) > 0:
-                if len(list_keys) <= 5:
-                    if list_keys[0][0] == 0:
-                        await send_trans(message_in.channel, translate(None, True, list_keys[0][1],
-                                                                       msg.content.split(" ")),
-                                         answer=message_in.reference.resolved)
-                    else:
-                        await send_trans(message_in.channel,
-                                         translate("ru", False, DICT_OF_RU_LANGUAGES[list_keys[0][1]],
-                                                   msg.content.split(" ")), answer=message_in.reference.resolved)
-                else:
-                    list_keys = list_keys[:5]
-                    if list_keys[0][0] == 0:
-                        await send_trans(message_in.channel, translate(None, True, list_keys[0][1],
-                                                                       msg.content.split(" ")),
-                                         answer=message_in.reference.resolved,
-                                         text="Maximum you can translate 5 languages")
-                    else:
-                        await send_trans(message_in.channel,
-                                         translate("ru", False, DICT_OF_RU_LANGUAGES[list_keys[0][1]],
-                                                   msg.content.split(" ")),
-                                         answer=message_in.reference.resolved,
-                                         text="Maximum you can translate 5 languages")
-
-                list_keys.pop(0)
-                for q in list_keys:
-                    if q[0] == 0:
-                        await send_trans(message_in.channel, translate(None, True, q[1],
-                                                                       msg.content.split(" ")))
-                    else:
-                        await send_trans(message_in.channel, translate("ru", False, DICT_OF_RU_LANGUAGES[q[1]],
-                                                                       msg.content.split(" ")))
-
-        return "exit"
+    return "exit"
 
 
-async def translate_text(message_in):
+async def translate_text(message_in):  # перевод по команде
     num_min_lang = 0
-    message = message_in.content.lower()
+    message = message_in.content.lower()  # сообщение в нижнем регистре для команд
     list_keys = list()
     message_deleted = 0
-    if len(message.split(" ")[0]) == 3 and message.split(" ")[0][-1] in "уd":
+    if len(message.split(" ")[0]) == 3 and message.split(" ")[0][-1] in "уd":  # если флажок на удаление
         message = message[:2] + message[3:]
         message_deleted = 1
         await message_in.delete()
 
-    for q in range(len(message.split(" "))):
-        if message.split(" ")[q] in DICT_OF_RU_LANGUAGES.values() or \
-                message.split(" ")[q] in DICT_OF_RU_LANGUAGES.keys():
-            if message.split(" ")[q] in DICT_OF_RU_LANGUAGES.keys():
-                list_keys.append([1, message.split(" ")[q]])  # если русский
+    for q in range(len(message.split(" "))):  # идём по языкам
+        if message.split(" ")[q] in DICT_OF_RU_LANGUAGES.values() or message.split(" ")[q] in DICT_OF_RU_LANGUAGES.keys():  # если название нормальное
+            if message.split(" ")[q] in DICT_OF_RU_LANGUAGES.values():
+                list_keys.append(message.split(" ")[q])  # если сразу по английски
             else:
-                list_keys.append([0, message.split(" ")[q]])  # если непонятно
-        else:
+                list_keys.append(DICT_OF_RU_LANGUAGES[message.split(" ")[q]])  # если нет, ищем нормальный
+        else:  # если хоть один неправильно, то всё
             break
 
-    if len(list_keys) > 0:
-        print()
-        if len(list_keys) < 5:
-            if list_keys[0][0] == 0:
-                await send_trans(message_in.channel, translate(None, True, list_keys[0][1],
-                                                               message_in.content.split(" ")[len(list_keys):]),
-                                 message_in, sender=message_deleted * message_in.author.name)
-            else:
-                await send_trans(message_in.channel, translate("ru", False, DICT_OF_RU_LANGUAGES[list_keys[0][1]],
-                                                               message_in.content.split(" ")[len(list_keys):]),
-                                 message_in, sender=message_deleted * message_in.author.name)
-        else:
-            num_min_lang = len(list_keys) - 5
-            list_keys = list_keys[:5]
-            if list_keys[0][0] == 0:
-                await send_trans(message_in.channel, translate(None, True, list_keys[0][1],
-                                                               message_in.content.split(" ")[len(list_keys):]),
-                                 message_in, text="Maximum you can translate 5 languages",
-                                 sender=message_deleted * message_in.author.name)
-            else:
-                await send_trans(message_in.channel, translate("ru", False, DICT_OF_RU_LANGUAGES[list_keys[0][1]],
-                                                               message_in.content.split(" ")[len(list_keys):]),
-                                 message_in, text="Maximum you can translate 5 languages",
-                                 sender=message_deleted * message_in.author.name)
+    if len(list_keys) == 0:
+        return "exit"
 
-        list_keys.pop(0)
-        for q in list_keys:
-            if q[0] == 0:
-                await send_trans(message_in.channel, translate(None, True, q[1], message_in.content.split(" ")[
-                                                                                 len(list_keys) + 1 + num_min_lang:]),
-                                 sender=message_deleted * message_in.author.name)
-            else:
-                await send_trans(message_in.channel, translate("ru", False, DICT_OF_RU_LANGUAGES[q[1]],
-                                                               message_in.content.split(" ")[len(list_keys) +
-                                                                                             1 + num_min_lang:]),
-                                 sender=message_deleted * message_in.author.name)
+    warning_message = 0
+    if len(list_keys) > 5:
+        list_keys = list_keys[:5]
+        warning_message = 1
+
+    print()
+    await send_trans(message_in.channel, translate(list_keys[0], message_in.content.split(" ")[len(list_keys):]),
+                     text="Maximum you can translate 5 languages" * warning_message,
+                     sender=message_deleted * message_in.author.name)
+
+    list_keys.pop(0)
+    for q in list_keys:
+        await send_trans(message_in.channel, translate(q, message_in.content.split(" ")[len(list_keys):]))
+
+    return "exit"
+
+
+async def translate_to_channels(message_in):
+    num_min_lang = 0
+    message = message_in.content.lower()
+    list_keys = list()
+
+    for q in CHANNELS_FOR_TRANSLATE.items():
+        channel = bot.get_channel(q[-1])
+        await send_trans(channel, translate(q[0], message_in.content.split(" ")[len(list_keys):]),
+                         sender=message_in.author.name)
+    print("Translations send to all channels")
+    return "exit"

@@ -5,7 +5,7 @@ from discord_components import Button, ButtonStyle
 
 
 @bot.command(pass_context=True)
-async def sos(ctx):
+async def sos(ctx):  # команда для отправки сообщения с командами
     await ctx.message.delete()
     print("Send help message")
     text_1 = "Это БЕСПЛАТНЫЙ бот-переводчик. Он умеет переводить ваши сообщения. " \
@@ -51,3 +51,4 @@ async def sos(ctx):
         ])
     else:
         await g.delete()
+    return True

@@ -10,13 +10,14 @@ from bot_init import bot
 
 @bot.command()
 @commands.has_permissions(administrator=True)
-async def off_bot(ctx):
+async def off_bot(ctx):  # отключение бота
     message = await ctx.send("You kill me!! :(")
     await ctx.message.delete()
     await asyncio.sleep(1)
     await message.delete()
     print("Program interrupted")
     exit()
+    return True
 
 
 @bot.command()
@@ -28,18 +29,16 @@ async def g_m(ctx):
     await ctx.send(mess)
     await ctx.message.delete()
     print(f"Send '{mess}' message")
+    return True
 
 
-@bot.event
-async def on_member_join(member):
+def new_user_entry(member):  # запись нового пользователя в базу
     with open('last_messages.txt', 'a') as f:
         f.write(str(member.id) + " " + str(datetime.datetime.today()) + "\n")
-    channel = bot.get_channel(966246794428305429)
-    await channel.send(str(member) + " join server")
+    return True
 
 
-@bot.event
-async def on_member_remove(member):
+def deleting_a_user(member):  # удаление человека при его выходе с сервера
     d = ""
     with open('last_messages.txt', 'r') as f:
         for q in f:
@@ -48,24 +47,40 @@ async def on_member_remove(member):
             d += q
     with open('last_messages.txt', 'w') as f:
         f.write(d)
+    return True
+
+
+@bot.event
+async def on_member_join(member):  # присоединение человека к серверу
+    new_user_entry(member)
+    channel = bot.get_channel(966246794428305429)
+    await channel.send(str(member) + " join server")
+    return True
+
+
+@bot.event
+async def on_member_remove(member):  # выход человека с сервера
+    deleting_a_user(member)
     channel = bot.get_channel(966246794428305429)
     await channel.send(str(member) + " leave over server")
+    return True
 
 
 @bot.command()
 @commands.has_permissions(administrator=True)
-async def delete(ctx, *a):
+async def delete(ctx, *a):  # удаление определённого количества сообщений
     if int(a[0]) <= 5 or a[-1] == "True":
         await ctx.channel.purge(limit=int(a[0]) + 1)
         print(f"Delete {a[0]} messages in channel '{ctx.channel.name}'")
     else:
         await ctx.message.delete()
         print("Messages not deleted, no confirmation")
+    return True
 
 
 @bot.command()
 @commands.has_permissions(administrator=True)
-async def send(ctx):
+async def send(ctx):  # отправка сообщения от имени бота
     mess = ctx.message.content.split(" ")
     channel = ctx.channel
     if len(mess[1]) == len(str(968166014594469888)):
@@ -77,10 +92,11 @@ async def send(ctx):
         await channel.send(mess_join)
     await ctx.message.delete()
     print(f"Send message '{mess_join}' in channel '{channel.name}'")
+    return True
 
 
-async def ban_cycle():
-    while True:  # для бана по неактивности
+async def ban_users():  # функция для отслеживания и удаления неактивных пользователей
+    while True:
         with open('last_messages.txt', 'r') as f:
             for q in f:
                 v = q.split(" ")[1].split("-")
@@ -117,7 +133,7 @@ async def ban_cycle():
 
 
 @bot.command()
-async def stat(*args):
+async def stat(*args):  # изменение статуса бота
     if args[0] == "on":
         print('Status turn on')
         await bot.change_presence(status=discord.Status.online,
@@ -130,3 +146,4 @@ async def stat(*args):
         print(f"Custom status '{str_1}' complete")
         await bot.change_presence(status=discord.Status.online,
                                   activity=discord.Game(str_1 + STATE_COMMANDS))
+    return True
