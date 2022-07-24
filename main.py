@@ -42,6 +42,9 @@ async def on_message(message_in):
     # отправка в каналы
     if asyncio.create_task(translate_to_channels(message_in)) == "exit":
         return
+    # перевод голосом в канал
+    if asyncio.create_task(say_translate(message_in)) == "exit":
+        return
     # перевод в остальных случаях
     asyncio.create_task(translate_text(message_in))
 

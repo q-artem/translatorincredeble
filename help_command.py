@@ -17,8 +17,9 @@ async def sos(ctx):  # команда для отправки сообщения
            "нм *- перевод на немецкий*\n" \
            "фр *- перевод на французский*\n" \
            "яп *- перевод на японский*\n" \
-           "Чтобы удалить переводимое сообщение, допишите букву 'у' к первому языку, например: 'ису ан Привет мир!'\n"
-    text_1 = "**Перевод по ответу: ответте на сообщение сообщением " \
+           "Чтобы удалить переводимое сообщение, допишите букву 'у' к первому языку, например: 'ису ан Привет мир!'\n" \
+           "Чтобы озвучить переводимое сообщение, допишите букву 'г' к первому языку, например: 'фрг ис Привет мир!'\n"
+    text_1 = "**Перевод по ответу: ответьте на сообщение сообщением " \
              "c буквой 'п'. Сообщение будет переведено на русский, или ответте сообщением " \
              "'п ан', 'п фр' и т. д., будет отправлен перевод на соответствующий язык**\n" \
              "Команды нечувствительны к регистру\n"
@@ -31,7 +32,9 @@ async def sos(ctx):  # команда для отправки сообщения
            "es *- translate to Spanish*\n" \
            "ja *- translate to Japanese*\n" \
            "To delete a translatable message, add a letter 'd' to the first language, for " \
-           "example: 'rud fr Hello world!'\n"
+           "example: 'rud fr Hello world!'\n" \
+           "To voice the message you are translating, add the letter 'v' to the first language, for example: " \
+           "'ruv es Hello world!'\n"
     text_1 = "**Translation by answer: reply to a message with a message " \
              "with the letter 't'. The message will be translated into English, or reply with a message " \
              "'t en', 't fr', etc., a translation into the appropriate language will be sent**\n" \

@@ -10,7 +10,7 @@ async def versions(ctx):  # отправка сообщения о версия�
     for q in VERSIONS_DICT.items():
         emb.add_field(name=q[0], value=q[-1], inline=False)
 
-    text = "Voice translation"
+    text = "While there are no ideas"
     emb.add_field(name="**(in developing)**\n", value=text, inline=False)
     emb.add_field(name="ᅠ ᅠ ", value="__*This message will be deleted in 2 minutes*__", inline=False)
 

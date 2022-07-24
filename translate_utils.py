@@ -1,9 +1,15 @@
 import datetime
+import os
+from asyncio import sleep
+from mutagen.mp3 import MP3
 import discord
+from discord.utils import get
 from lingua import LanguageDetectorBuilder
 from translate import Translator
 from constants import DICT_LANG, LANGUAGES, DICT_OF_LANGUAGES, DICT_OF_RU_LANGUAGES, CHANNELS_FOR_TRANSLATE
 from bot_init import bot
+import gtts
+from playsound import playsound
 
 
 def translation_information_string(a, b):  # генерация строки с информацией о языках
@@ -188,9 +194,79 @@ async def translate_text(message_in):  # перевод по команде
     return "exit"
 
 
+async def say_translate(message_in):  # произношение перевода в канал
+    message = message_in.content.lower()  # сообщение в нижнем регистре для команд
+    list_keys = list()
+
+    if len(message.split(" ")[0]) == 3 and message.split(" ")[0][-1] in "гs":
+        message = message[:2] + message[3:]
+        await message_in.delete()
+
+        for q in range(len(message.split(" "))):  # идём по языкам
+            if message.split(" ")[q] in DICT_OF_RU_LANGUAGES.values() or message.split(" ")[q] in \
+                    DICT_OF_RU_LANGUAGES.keys():  # если название нормальное
+                if message.split(" ")[q] in DICT_OF_RU_LANGUAGES.values():
+                    list_keys.append(message.split(" ")[q])  # если сразу по английски
+                else:
+                    list_keys.append(DICT_OF_RU_LANGUAGES[message.split(" ")[q]])  # если нет, ищем нормальный
+            else:  # если хоть один неправильно, то всё
+                break
+
+        if len(list_keys) == 0:
+            return "exit"
+
+        warning_message = 0
+        if len(list_keys) > 5:
+            list_keys = list_keys[:5]
+            warning_message = 1
+
+        print()
+
+        name = (str(datetime.datetime.today()) + ".mp3").replace(":", "-")
+        playing = list()
+        audio_lens = list()
+
+        if warning_message:
+            war = await message_in.channel.send("Maximum you can translate 5 languages")
+            await sleep(2)
+            await war.delete()
+            return
+
+        channel = message_in.author.voice
+        if channel is None:
+            mess = await message_in.channel.send("You are not connected to a voice channel")
+            await sleep(2)
+            await mess.delete()
+            return
+
+        for q in range(len(list_keys)):
+            tts = gtts.gTTS(translate(list_keys[q], message_in.content.split(" ")[len(list_keys):])[0],
+                            lang=list_keys[q])
+            name_1 = name[:-4] + "-" + str(q) + name[-4:]
+            tts.save(name_1)
+            playing.append(discord.FFmpegPCMAudio(executable=r"C:\ffmpeg\bin\ffmpeg.exe", source=name_1))
+            audio = MP3(name_1)
+            audio_lens.append(audio.info.length)
+
+        channel = channel.channel
+
+        await channel.connect()
+        voice = message_in.guild.voice_client
+        voice.volume = 200
+        for q in range(len(list_keys)):
+            voice.play(playing[q])
+            await sleep(audio_lens[q] + 1)
+
+        await voice.disconnect()
+        for q in range(len(list_keys)):
+            os.remove(name[:-4] + "-" + str(q) + name[-4:])
+
+    return "exit"
+
+
 async def translate_to_channels(message_in):
-    num_min_lang = 0
-    message = message_in.content.lower()
+    if message_in.channel.category_id == 968100661721976852:
+        return
     list_keys = list()
 
     for q in CHANNELS_FOR_TRANSLATE.items():
