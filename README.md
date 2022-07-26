@@ -2,3 +2,4 @@
 best free translator)
 pip install discord translate lingua-language-detector discord-py-slash-command discord-py-inter
 actions
+Для голоса на термуксе ставим ffmpeg, потом pkg install binutils, потом pip install -U discord-py[voice]
