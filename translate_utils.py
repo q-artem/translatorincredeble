@@ -3,13 +3,12 @@ import os
 from asyncio import sleep
 from mutagen.mp3 import MP3
 import discord
-from discord.utils import get
+from sys import platform
 from lingua import LanguageDetectorBuilder
 from translate import Translator
 from constants import DICT_LANG, LANGUAGES, DICT_OF_LANGUAGES, DICT_OF_RU_LANGUAGES, CHANNELS_FOR_TRANSLATE
 from bot_init import bot
 import gtts
-from playsound import playsound
 
 
 def translation_information_string(a, b):  # генерация строки с информацией о языках
@@ -244,7 +243,10 @@ async def say_translate(message_in):  # произношение перевод�
                             lang=list_keys[q])
             name_1 = name[:-4] + "-" + str(q) + name[-4:]
             tts.save(name_1)
-            playing.append(discord.FFmpegPCMAudio(executable=r"C:\ffmpeg\bin\ffmpeg.exe", source=name_1))
+            str_1 = "ffmpeg"
+            if platform == "win32":
+                str_1 = r"C:\ffmpeg\bin\ffmpeg.exe"
+            playing.append(discord.FFmpegPCMAudio(executable=str_1, source=name_1))
             audio = MP3(name_1)
             audio_lens.append(audio.info.length)
 

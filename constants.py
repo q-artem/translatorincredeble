@@ -44,8 +44,9 @@ VERSIONS_DICT = {"__**0.1.0**__\n": "Created a bot, added basic ability to trans
                                     "errors are removed",
                  "__**0.5.1**__\n": "Code cleaned up, added beta translation to channels",
                  "__**0.6.0**__\n": "Added the ability to speak, added the function of voice translation, added "
-                                    "multiple voice translation"
+                                    "multiple voice translation",
+                 "__**0.6.1**__\n": "Fix minor bugs"
                  }
 STATE_COMMANDS = " | !sos !versions"
 STATE = "вообще-то не играет" + STATE_COMMANDS
-CHANNELS_FOR_TRANSLATE = {"ru": 999267959014965258, "es": 999267254384463892, "ja": 999267706861797417}
+CHANNELS_FOR_TRANSLATE = {"ru": 999267959014965258, "es": 999267254384463892}
