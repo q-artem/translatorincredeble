@@ -37,11 +37,16 @@ def translate(on_l, args):  # перевод текста
     except KeyError:
         print("Unable to detect language")
         lang_1 = "en"
-    translator = Translator(from_lang=lang_1, to_lang=on_l)
     text = str(" ".join(list(args)))
-    trans = translator.translate(text)
+    if lang_1 != on_l:
+        translator = Translator(from_lang=lang_1, to_lang=on_l)
+        trans = translator.translate(text)
+        is_translate = True
+    else:
+        trans = text
+        is_translate = False
     print(f"Translate message from '{text}' to '{trans}'")
-    return trans, translation_information_string(lang_1, on_l)
+    return trans, translation_information_string(lang_1, on_l), is_translate
 
 
 def update_activity_users(message_in):  # обновление времени последнего сообщения пользователя
@@ -57,8 +62,12 @@ def update_activity_users(message_in):  # обновление времени п
     return True
 
 
-async def send_trans(channel, message, answer=None, text="", sender=""):  # отправка перевода
-    sender = "*`" + sender + ":`*\n"
+async def send_trans(channel, message, answer=None, text="", sender="", in_channel=False):  # отправка перевода
+    sender = "`" + sender
+    if in_channel:
+        sender += ' in channel "' + channel.name + '":`\n'
+    else:
+        sender += ":`\n"
     trans, lang = message
     while ("&lt;@" in trans) or ("&gt;" in trans):  # ищем упоминания пользователей
         num1 = trans.find("&lt;@")
@@ -144,12 +153,12 @@ async def translate_by_answer(message_in):  # перевод сообщения 
                 list_keys = list_keys[:5]
                 warning_message = 1
             await send_trans(message_in.channel, translate(list_keys[0],
-                                                           msg.content.split(" ")),
+                                                           msg.content.split(" "))[:2],
                              answer=message_in.reference.resolved,
                              text="Maximum you can translate 5 languages" * warning_message)
             list_keys.pop(0)
             for q in list_keys:
-                await send_trans(message_in.channel, translate(q, msg.content.split(" ")))
+                await send_trans(message_in.channel, translate(q, msg.content.split(" "))[:2])
 
     return "exit"
 
@@ -182,13 +191,13 @@ async def translate_text(message_in):  # перевод по команде
         warning_message = 1
 
     print()
-    await send_trans(message_in.channel, translate(list_keys[0], message_in.content.split(" ")[len(list_keys):]),
+    await send_trans(message_in.channel, translate(list_keys[0], message_in.content.split(" ")[len(list_keys):])[:2],
                      text="Maximum you can translate 5 languages" * warning_message,
                      sender=message_deleted * message_in.author.name)
 
     list_keys.pop(0)
     for q in list_keys:
-        await send_trans(message_in.channel, translate(q, message_in.content.split(" ")[len(list_keys):]))
+        await send_trans(message_in.channel, translate(q, message_in.content.split(" ")[len(list_keys):])[:2])
 
     return "exit"
 
@@ -267,13 +276,17 @@ async def say_translate(message_in):  # произношение перевод�
 
 
 async def translate_to_channels(message_in):
-    if message_in.channel.category_id == 968100661721976852:
+    if message_in.channel.category_id == 968100661721976852 or message_in.channel.category_id == 968961814744408124:
+        return
+    if message_in.content == "":
         return
     list_keys = list()
 
     for q in CHANNELS_FOR_TRANSLATE.items():
-        channel = bot.get_channel(q[-1])
-        await send_trans(channel, translate(q[0], message_in.content.split(" ")[len(list_keys):]),
-                         sender=message_in.author.name)
+        channel = bot.get_channel(q[-1] * 0 + 966246794428305429)
+        a, b, c = translate(q[0], message_in.content.split(" ")[len(list_keys):])
+        if c:
+            await send_trans(channel, (a, b),
+                             sender=message_in.author.name, in_channel=True)
     print("Translations send to all channels")
     return "exit"
