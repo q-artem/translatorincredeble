@@ -280,11 +280,10 @@ async def translate_to_channels(message_in):
         return
     if message_in.content == "":
         return
-    list_keys = list()
 
     for q in CHANNELS_FOR_TRANSLATE.items():
-        channel = bot.get_channel(q[-1] * 0 + 966246794428305429)
-        a, b, c = translate(q[0], message_in.content.split(" ")[len(list_keys):])
+        channel = bot.get_channel(q[-1])
+        a, b, c = translate(q[0], message_in.content.split(" "))
         if c:
             await send_trans(channel, (a, b),
                              sender=message_in.author.name, in_channel=True)
