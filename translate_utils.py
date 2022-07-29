@@ -62,12 +62,12 @@ def update_activity_users(message_in):  # обновление времени п
     return True
 
 
-async def send_trans(channel, message, answer=None, text="", sender="", in_channel=False):  # отправка перевода
+async def send_trans(channel, message, answer=None, text="", sender="", in_channel=None):  # отправка перевода
     sender = "`" + sender
-    if in_channel:
-        sender += ' in channel "' + channel.name + '":`\n'
-    else:
+    if in_channel is None:
         sender += ":`\n"
+    else:
+        sender += ' in channel "' + in_channel.name + '":`\n'
     trans, lang = message
     while ("&lt;@" in trans) or ("&gt;" in trans):  # ищем упоминания пользователей
         num1 = trans.find("&lt;@")
@@ -135,7 +135,8 @@ async def translate_by_answer(message_in):  # перевод сообщения 
                 list_keys.append("en")
         else:  # если несколько
             for q in range(len(message.split(" ")[1:])):  # идём по всем кроме первого
-                if message.split(" ")[1:][q] in DICT_OF_RU_LANGUAGES.values() or message.split(" ")[1:][q] in DICT_OF_RU_LANGUAGES.keys():  # если название нормальное
+                if message.split(" ")[1:][q] in DICT_OF_RU_LANGUAGES.values() or message.split(" ")[1:][
+                    q] in DICT_OF_RU_LANGUAGES.keys():  # если название нормальное
                     if message.split(" ")[1:][q] in DICT_OF_RU_LANGUAGES.values():
                         list_keys.append(message.split(" ")[1:][q])  # если сразу по английски
                     else:
@@ -146,7 +147,8 @@ async def translate_by_answer(message_in):  # перевод сообщения 
         if flag_err:
             print("Incorrect command format")
             return "exit"  # удалить повторения
-        if message_in.reference and (msg := message_in.reference.resolved) and isinstance(msg, discord.Message):  # если только это ответ
+        if message_in.reference and (msg := message_in.reference.resolved) and isinstance(msg,
+                                                                                          discord.Message):  # если только это ответ
             await message_in.delete()
             warning_message = 0
             if len(list_keys) > 5:
@@ -174,7 +176,8 @@ async def translate_text(message_in):  # перевод по команде
         await message_in.delete()
 
     for q in range(len(message.split(" "))):  # идём по языкам
-        if message.split(" ")[q] in DICT_OF_RU_LANGUAGES.values() or message.split(" ")[q] in DICT_OF_RU_LANGUAGES.keys():  # если название нормальное
+        if message.split(" ")[q] in DICT_OF_RU_LANGUAGES.values() or message.split(" ")[
+            q] in DICT_OF_RU_LANGUAGES.keys():  # если название нормальное
             if message.split(" ")[q] in DICT_OF_RU_LANGUAGES.values():
                 list_keys.append(message.split(" ")[q])  # если сразу по английски
             else:
@@ -286,6 +289,6 @@ async def translate_to_channels(message_in):
         a, b, c = translate(q[0], message_in.content.split(" "))
         if c:
             await send_trans(channel, (a, b),
-                             sender=message_in.author.name, in_channel=True)
+                             sender=message_in.author.name, in_channel=message_in.channel)
     print("Translations send to all channels")
     return "exit"
