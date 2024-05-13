@@ -1,7 +1,6 @@
 import asyncio
 from bot_init import bot
 import discord
-from discord_components import Button, ButtonStyle
 
 
 @bot.command(pass_context=True)
@@ -44,14 +43,18 @@ async def sos(ctx):  # команда для отправки сообщения
            "es Hello\n" \
            "-> こんにちは"
     emb.add_field(name=text, value="Current version: 0.5.0", inline=False)
-    g = await ctx.send(embed=emb, components=[
-            Button(style=ButtonStyle.red, label='Delete this message', disabled=False)])
+    view = discord.ui.View()
+    btn = discord.ui.Button(style=discord.ButtonStyle.danger, label='Delete this message', disabled=False)
+    view.add_item(btn)
+    g = await ctx.send(embed=emb, view=view)
     try:
         await bot.wait_for('button_click', check=lambda message: message.author == ctx.author, timeout=300.0)
     except asyncio.TimeoutError:
-        await g.edit(components=[
-            Button(style=ButtonStyle.red, label='Delete this message', disabled=True)
-        ])
+        emb.add_field(name=text, value="Current version: 0.5.0", inline=False)
+        view = discord.ui.View()
+        btn = discord.ui.Button(style=discord.ButtonStyle.danger, label='Delete this message', disabled=True)
+        view.add_item(btn)
+        await g.edit(view=view)
     else:
         await g.delete()
     return True

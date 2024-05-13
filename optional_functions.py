@@ -17,7 +17,6 @@ async def off_bot(ctx):  # отключение бота
     await message.delete()
     print("Program interrupted")
     exit()
-    return True
 
 
 @bot.command()

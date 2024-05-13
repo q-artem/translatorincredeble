@@ -1,5 +1,5 @@
 import cryptocode
-from discord_components import DiscordComponents
+# from discord_components import DiscordComponents
 # ################# Additional files ################## #
 
 from optional_functions import *
@@ -15,7 +15,7 @@ print("Libraries import completed")
 @bot.event
 async def on_ready():
     print('Client connected')
-    DiscordComponents(bot)
+    # DiscordComponents(bot)
     print('Discord Components module ready')
     await bot.change_presence(status=discord.Status.online,
                               activity=discord.Game(STATE))
@@ -46,7 +46,7 @@ async def on_message(message_in):
     if asyncio.create_task(say_translate(message_in)) == "exit":
         return
     # перевод в остальных случаях
-    asyncio.create_task(translate_text(message_in))
+    await asyncio.create_task(translate_text(message_in))
 
     await bot.process_commands(message_in)
 

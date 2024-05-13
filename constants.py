@@ -48,7 +48,8 @@ VERSIONS_DICT = {"__**0.1.0**__\n": "Created a bot, added basic ability to trans
                  "__**0.6.1**__\n": "Fix minor bugs",
                  "__**0.6.2**__\n": "Redesigned translation function, added mention of the channel during automatic "
                                     "translation",
-                 "__**0.6.3**__\n": "fixed a bug in the mention of the channel when translating"
+                 "__**0.6.3**__\n": "fixed a bug in the mention of the channel when translating",
+                 "__**0.7.0**__\n": "removed the discord_components module"
                  }
 STATE_COMMANDS = " | !sos !versions"
 STATE = "вообще-то не играет" + STATE_COMMANDS
