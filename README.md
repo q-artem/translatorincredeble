@@ -1,5 +1,6 @@
 # RofIeX-translatorincredeble
 best free translator)
+
 pip install discord translate lingua-language-detector discord-py-slash-command discord-py-interactions mutagen gtts pynacl
 
 Для голоса на термуксе ставим ffmpeg, потом pkg install binutils, потом pip install -U discord-py[voice]
